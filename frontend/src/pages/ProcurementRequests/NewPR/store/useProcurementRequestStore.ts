@@ -36,6 +36,7 @@ interface ProcurementRequestState {
     updateCategoryMakes: (categoryName: string, newMake: string) => void; // Signature remains the same
     resetStore: () => void;
     _recalculateCategories: () => void;
+    hasProgress: (currentProjectId: string | null) => boolean;
 }
 
 // Helper to derive categories, now incorporating sessionAddedMakes
@@ -260,6 +261,20 @@ export const useProcurementRequestStore = create<ProcurementRequestState>()(
                     initialCategoryMakes: {},
                     sessionAddedMakes: {}, // <<< Reset session makes
                 });
+            },
+            hasProgress: (currentProjectId: string | null) => {
+                const state = get();
+
+                if (!state.projectId || state.projectId !== currentProjectId) {
+                    return false;
+                }
+
+                const hasSelectedWP = state.selectedWP && state.selectedWP.length > 0;
+                const hasProcItems = state.procList.length > 0;
+                const hasComment = state.newPRComment && state.newPRComment.length > 0;
+                const hasSessionMakes = Object.keys(state.sessionAddedMakes).length > 0;
+
+                return hasSelectedWP || hasProcItems || hasComment || hasSessionMakes;
             },
         }),
         {

@@ -198,6 +198,18 @@ export const ProjectForm = () => {
             limit: 1000
         });
 
+    const handleResetAndNavigate = (path) => {
+        resetStore();
+        form.reset(defaultValues);
+        setAreaNames([]);
+        
+        setTimeout(() => {
+            if (path) {
+                navigate(path);
+            }
+        }, 50);
+    };
+
 
     // --- Connecting to the store --- //
     const {
@@ -208,7 +220,7 @@ export const ProjectForm = () => {
         phase5, setPhase5Data,
         // currentStep: currentStepFromStore,
         goToStep: goToStepInStore,
-        reset: resetStore
+        resetStore: resetStore
 
     } = useProjectCreationStore();
 
@@ -257,39 +269,28 @@ export const ProjectForm = () => {
     // ------ Updated Logic for Default Values ------
     // Replacing the defaultValues in the form with to follow store:
     const defaultValues: ProjectFormValues = {
-        project_name: phase1.projectName || "",
-        customer: phase1.customer || "",
-        project_value: phase1.projectValue ? String(phase1.projectValue) : "",
-        project_type: phase1.projectType || "",
-        // project_gst_number: phase1.project_gst_number || { list: [] },
-        project_gst_number: phase1.project_gst_number || { list: [{ location: "Bengaluru", gst: "29ABFCS9095N1Z9" }] },
-        subdivisions: phase1.subdivisions || "",
-        // subdivisionNames: phase1.subdivisionNames || [],
-        
-        // Phase 2
-        address_line_1: phase2.addressLine1 || "",
-        address_line_2: phase2.addressLine2 || "",
-        project_city: phase2.project_city || "",
-        project_state: phase2.project_state || "",
-        pin: phase2.pin || "",
-        phone: phase2.phone ? String(phase2.phone) : "",
-        email: phase2.email || "",
 
-        // Phase 3
-        // project_start_date: phase3.projectStartDate ? new Date(phase3.projectStartDate) : new Date(),
-        project_start_date: new Date(), 
-        project_end_date: phase3.projectEndDate ? new Date(phase3.projectEndDate) : undefined,
-
-        // Phase 4
-        project_lead: phase4.projectLead || "",
-        project_manager: phase4.projectManager || "",
-        procurement_lead: phase4.procurementLead || "",
-        design_lead: phase4.designLead || "",
-        accountant: phase4.accountant || "",
-
-        // Phase 5
-        project_work_packages: { work_packages: phase5.workPackages || [] },
-        // project_scopes: { scopes: [] },
+        project_name: "",
+        customer: "",
+        project_value: "",
+        project_type: "",
+        project_gst_number: { list: [{ location: "Bengaluru", gst: "29ABFCS9095N1Z9" }] },
+        subdivisions: "",
+        address_line_1: "",
+        address_line_2: "",
+        project_city: "",
+        project_state: "",
+        pin: "",
+        email: "",
+        phone: "",
+        project_start_date: new Date(),
+        project_end_date: undefined,
+        project_lead: "",
+        project_manager: "",
+        procurement_lead: "",
+        design_lead: "",
+        accountant: "",
+        project_work_packages: { work_packages: [] },
     };
 
     // Get the step from the store first
@@ -305,7 +306,10 @@ export const ProjectForm = () => {
             customer: phase1.customer || "",
             project_value: String(phase1.projectValue ?? ""),
             project_type: String(phase1.projectType ?? ""),
-            project_gst_number: phase1.project_gst_number || { list: [] },
+            project_gst_number: phase1.project_gst_number || { list: [{ 
+                location: "Bengaluru", 
+                gst: "29ABFCS9095N1Z9" 
+            }] },
             subdivisions: String(phase1.subdivisions ?? ""),
             
             // Phase 2 
@@ -323,7 +327,7 @@ export const ProjectForm = () => {
             (phase3.projectStartDate instanceof Date ? 
                 phase3.projectStartDate : 
                 new Date(phase3.projectStartDate)) : 
-            new Date(), // Default to today if not set
+                new Date(), // Default to today if not set
         
             project_end_date: phase3.projectEndDate ? 
                 (phase3.projectEndDate instanceof Date ? 
@@ -344,10 +348,8 @@ export const ProjectForm = () => {
         }
     });
 
-    // --- Watching for form changes and updating the store
-    const watchedValues = form.watch();
-
     useEffect(() => {
+        // --- Watching for form changes and updating the store
         const subscription = form.watch((values) => {
             if (!values) return;
 
@@ -405,19 +407,6 @@ export const ProjectForm = () => {
         }
     }, [currentStepFromStore]);
 
-
-    // Effect to keep local page/section state in sync with the store changes
-    // useEffect(() => {
-    //     const unsubscribe = useProjectCreationStore.subscribe(
-    //         (state) => state.currentStep,
-    //         (currentStep) => {
-    //             setCurrentStep(currentStep);
-    //             setSection(sections[currentStep - 1]);
-    //         }
-    //     );
-    //     return unsubscribe;
-    // }, []); 
-
     const { data: company, isLoading: company_isLoading, error: company_error, mutate: company_mutate } = useFrappeGetDocList('Customers', {
         fields: ["name", "company_name", "creation"],
         limit: 1000,
@@ -449,6 +438,7 @@ export const ProjectForm = () => {
     const [popoverOpen2, setPopoverOpen2] = useState(false);
     const [duration, setDuration] = useState(0)
     const [newProjectId, setNewProjectId] = useState();
+    const [isSuccessDialogOpen, setIsSuccessDialogOpen] = useState(false); 
     const { toast } = useToast()
     // const [section, setSection] = useState("projectDetails")
 
@@ -489,8 +479,6 @@ export const ProjectForm = () => {
     const [currentStep, setCurrentStep] = useState(currentStepFromStore || 1);
     const [section, setSection] = useState(sections[currentStepFromStore ? currentStepFromStore - 1 : 0]);
     
-
-
     // useEffect(() => {
     //     if (pincode.length >= 6 && !pincode_data) {
     //         form.setValue("project_city", "Not Found")
@@ -630,24 +618,7 @@ export const ProjectForm = () => {
 
         try {
 
-            const payload = {
-                ...values,
-                areaNames,
-                project_value: values.project_value ? parseFloat(values.project_value) : 0,
-                pin: values.pin ? String(values.pin) : "",
-                phone: values.phone ? String(values.phone) : "",
-                project_start_date: values.project_start_date.toISOString(),
-                project_end_date: values.project_end_date?.toISOString(),
-            };
-
-            console.log("Full payload being sent to backend:", JSON.stringify(payload, null, 2));
-
-            // Validate areaNames length matches subdivisions
-            const subdivisionCount = parseInt(values.subdivisions) || 0;
-            if (subdivisionCount > 0 && areaNames.length !== subdivisionCount) {
-                throw new Error(`Please provide names for all ${subdivisionCount} subdivisions.`);
-            }
-            
+            // Validate project cuty, end-date and work packages
             if (values.project_city === "Not Found" || values.project_state === "Not Found") {
                 throw new Error('City and State are "Not Found", Please Enter a Valid Pincode!')
             }
@@ -658,33 +629,43 @@ export const ProjectForm = () => {
                 throw new Error('Please select atleast one work package associated with this project!')
             }
 
-            // const udatedValues = {
-            //     ...values,
-            //     project_value: values.project_value ? parseFloat(values.project_value) : 0 ,
-            // }
 
+            const payload = {
+                ...values,
+                areaNames,
+                project_value: values.project_value ? parseFloat(values.project_value) : 0,
+                pin: values.pin ? String(values.pin) : "",
+                phone: values.phone ? String(values.phone) : "",
+                project_start_date: values.project_start_date.toISOString(),
+                project_end_date: values.project_end_date?.toISOString(),
+                project_scopes: { scopes: [] },
+
+            };
+
+            // console.log("Full payload being sent to backend:", JSON.stringify(payload, null, 2)); // Debugging Log
+
+            // // ------ old response logic ------ //
             // const response = await createProjectAndAddress({
-            //     values: { ...updatedValues, areaNames },
+            //     values: { ...values, areaNames },
             // });
 
-            // ------ old response logic ------ //
-            const response = await createProjectAndAddress({
-                values: { ...values, areaNames },
-            });
-
             // Updated Response Logic
-            // const response = await createProjectAndAddress({ values: payload });
+            const response = await createProjectAndAddress({ values: payload });
+
+            // console.log("RESPONSE FROM BACKEND:", response); // Debugging Log
 
             if (response.message.status === 200) {
+                // console.log("Full success response:", response); // Debugging Log
                 toast({
                     title: "Success!",
                     description: `Project ${response.message.project_name} created successfully!`,
                     variant: "success"
                 })
-                setNewProjectId(response.message.project_name)
-                handleOpenDialog()
-                resetStore()
-                form.reset(defaultValues);
+
+                // Verify the project ID is being set correctly
+                // console.log("Setting new project ID:", response.message.project_name); // Debugging Log
+                setNewProjectId(response.message.project_name);
+                setIsSuccessDialogOpen(true);
 
             } else if (response.message.status === 400) {
                 toast({
@@ -694,6 +675,12 @@ export const ProjectForm = () => {
                 });
             }
         } catch (error) {
+            console.error("Detailed error:", {
+                message: error?.message,
+                stack: error?.stack,
+                response: error?.response
+            });
+            
             toast({
                 title: "Failed!",
                 description: `${error?.message}`,
@@ -702,6 +689,7 @@ export const ProjectForm = () => {
             console.log("Error:", error);
         }
     }
+    
     const startDate = form.watch("project_start_date");
     const endDate = form.watch("project_end_date");
 
@@ -809,13 +797,13 @@ export const ProjectForm = () => {
 
         const count = Number(e);
         const currentNames = phase1.subdivisionNames || [];
-        console.log("Current Names:", currentNames);
+        // console.log("Current Names:", currentNames); // Debugging Log
         
         // Preserve existing names if count is reduced
         const newNames = Array.from({ length: count }, (_, i) => 
             currentNames[i] || { name: `Area ${i + 1}`, status: "Pending" }
         );
-        console.log('New Names for Area are: ------> ', newNames);
+        // console.log('New Names for Area are: ------> ', newNames); // Debugging Log
         
         setPhase1Data({ 
             subdivisions: e,
@@ -823,13 +811,13 @@ export const ProjectForm = () => {
         });
         
         // Update form value
-        setAreaNames(newNames); // Update local state
-        console.log("areaNames after setAreaNames:", areaNames);
+        setAreaNames(newNames); // Updating local state
+        // console.log("areaNames after setAreaNames:", areaNames); // Debugging Log
         form.setValue("subdivisions", e);
 
     };
 
-    console.log('Area name are -------------->  ', areaNames);
+    // console.log('Area name are -------------->  ', areaNames); // Debugging Log
 
     // const handleAreaNameChange = (index, event) => {
     //     const newAreaNames = [...areaNames];
@@ -914,8 +902,8 @@ export const ProjectForm = () => {
         return <div>{error?.message}</div>;
     }
 
-    // console.log("catOptions", form.getValues().project_category_list.list)
-    // console.log("workPackageOptions", form.getValues().project_work_packages.work_packages)
+    // console.log("catOptions", form.getValues().project_category_list.list) // Debugging Log
+    // console.log("workPackageOptions", form.getValues().project_work_packages.work_packages) // Debugging Log
 
     return (
 
@@ -944,17 +932,6 @@ export const ProjectForm = () => {
                     />
                 ))}
             </Steps>
-
-
-
-
-
-
-
-            
-        
-
-
 
             <Form {...form}>
                 <form onSubmit={(event) => {
@@ -1599,7 +1576,6 @@ export const ProjectForm = () => {
                                         Previous
                                     </Button>
                                     {/* <Button onClick={goToNextSection}>Next</Button> */}
-
                                     {/* Updated Next Button */}
                                     {currentStep < sections.length && (
                                         <Button onClick={goToNextSection}>
@@ -2088,7 +2064,7 @@ export const ProjectForm = () => {
                                     }
                                 </div>
 
-                                <AlertDialog>
+                                <AlertDialog open={isSuccessDialogOpen} onOpenChange={setIsSuccessDialogOpen}>
                                     <AlertDialogTrigger asChild>
                                         <button className="hidden" id="alertOpenProject" >Trigger Dialog</button>
                                     </AlertDialogTrigger>
@@ -2098,19 +2074,43 @@ export const ProjectForm = () => {
                                                 Project Created Successfully! You can start adding project estimates.
                                             </AlertDialogTitle>
                                             <div className="flex gap-2">
-                                                <AlertDialogAction onClick={() => navigate("/projects")} className="flex items-center gap-1 bg-gray-100 text-black">
+                                                {/* Updated for handling the dialog properly */}
+                                                <AlertDialogAction 
+                                                    onClick={() => {
+                                                        // Logic for "Go Back"
+                                                        // resetStore();
+                                                        // form.reset(defaultValues);
+                                                        // setAreaNames([]);
+                                                        // navigate("/projects");
+
+                                                        // Updated To Follow AreaNames state reset before navigation
+                                                        handleResetAndNavigate("/projects");
+                                                    }} 
+                                                    className="flex items-center gap-1 bg-gray-100 text-black hover:bg-gray-200"
+                                                >
                                                     <Undo2 className="h-4 w-4" />
                                                     Go Back
                                                 </AlertDialogAction>
+
                                                 <AlertDialogAction onClick={() => {
-                                                    form.reset()
-                                                    form.clearErrors()
+                                                    {/* Updated for reseting the store and handling the dialog properly */}
+                                                    resetStore();
+                                                    setAreaNames([]);
+                                                    form.reset(defaultValues);
+                                                    setSection("projectDetails"); // Goes back to the first step
+                                                    setCurrentStep(1);
+                                                    goToStepInStore(1);
                                                 }}
                                                     className="flex items-center gap-1"
                                                 >
                                                     <CirclePlus className="h-4 w-4" />
                                                     Create New</AlertDialogAction>
-                                                <AlertDialogAction onClick={() => navigate(`/projects/${newProjectId}/add-estimates`)} className="flex items-center gap-1 bg-gray-100 text-black">
+                                                <AlertDialogAction onClick={() => {
+                                                    resetStore();
+                                                    form.reset(defaultValues);
+                                                    navigate(`/projects/${newProjectId}/add-estimates`);
+                                                }}
+                                                    className="flex items-center gap-1 bg-gray-100 text-black">
                                                     <BadgeIndianRupee className="h-4 w-4" />
                                                     Next: Fill Estimates
                                                 </AlertDialogAction>

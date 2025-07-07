@@ -75,7 +75,8 @@ interface ProjectCreationState{
 
     goToStep: (step: number) => void;
     setProjectId: (id: string) => void;
-    reset: () => void;
+    resetStore: () => void;
+    hasProgress: () => boolean;
     
 };
 
@@ -103,7 +104,7 @@ function isPersistedState(state: unknown): state is Partial<ProjectCreationState
 
 export const useProjectCreationStore = create<ProjectCreationState>()(
     persist(
-        (set) => ({
+        (set, get) => ({
             ...initialState,
             // --- actions ---
             //  setPhase1Data: (data) => set((state) => ({ phase1: { ...state.phase1, ...data } })),
@@ -165,13 +166,54 @@ export const useProjectCreationStore = create<ProjectCreationState>()(
 
              goToStep: (step) => set({ currentStep: step }),
              setProjectId: (id) => set({ projectId: id }),
-             reset: () => set({
+            //  reset: () => set({
+            //     ...initialState,
+            //     phase3: {
+            //         ...initialState.phase3,
+            //         projectStartDate: new Date(),
+            //     }
+            // }),
+            resetStore: () => set({
               ...initialState,
-              phase3: {
-                  ...initialState.phase3,
-                  projectStartDate: new Date(),
-              }
-          }),
+              projectId: null,
+              phase1: { subdivisionNames: [] },
+              phase2: {},
+              phase3: { projectStartDate: new Date() }, // Ensure default start date
+              phase4: {},
+              phase5: { workPackages: [] },
+            }),
+
+            // -------- Logic for checking the store  --------
+            hasProgress: () => {
+                const state = get();
+
+                if (state.currentStep && state.currentStep > 1) {
+                    return true;
+                }
+                const { projectName, customer, projectValue, projectType, subdivisions } = state.phase1;
+                if (
+                    (projectName && projectName.length > 0) ||
+                    (customer && customer.length > 0) ||
+                    (projectValue && projectValue.length > 0) ||
+                    (projectType && projectType.length > 0) ||
+                    (subdivisions && subdivisions.length > 0)
+                ) {
+                    return true;
+                }
+                if (Object.values(state.phase2).some(value => value && String(value).length > 0)) {
+                    return true;
+                }   
+                if (state.phase3.projectEndDate) {
+                    return true;
+                }
+                if (Object.values(state.phase4).some(value => value && String(value).length > 0)) {
+                    return true;
+                }
+                if (state.phase5.workPackages && state.phase5.workPackages.length > 0) {
+                    return true;
+                }
+                return false;
+            },
         }),
         {
             name: 'project-creation-store',
@@ -225,4 +267,3 @@ export const useProjectCreationStore = create<ProjectCreationState>()(
 
     )
 );
-

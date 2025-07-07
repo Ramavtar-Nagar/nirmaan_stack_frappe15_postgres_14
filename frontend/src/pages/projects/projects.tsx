@@ -1,7 +1,17 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
+import {
+    useReactTable,
+    getCoreRowModel,
+    getPaginationRowModel,
+    getSortedRowModel,
+    getFilteredRowModel,
+    type ColumnFiltersState,
+    type SortingState,
+} from "@tanstack/react-table";
+
 import { ColumnDef } from "@tanstack/react-table";
 import { Link } from "react-router-dom";
-import { useFrappeGetDocList, useFrappeGetDocCount, useFrappePostCall } from "frappe-react-sdk";
+import { useFrappeGetDocList, useFrappeGetDocCount, useFrappePostCall, useFrappeDocTypeEventListener } from "frappe-react-sdk";
 import memoize from 'lodash/memoize';
 import { CircleCheckBig, CirclePlus, HardHat, OctagonMinus } from "lucide-react";
 import { TailSpin } from "react-loader-spinner";
@@ -14,7 +24,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { TableSkeleton } from "@/components/ui/skeleton";
 
 // --- Hooks & Utils ---
-import { useServerDataTable } from '@/hooks/useServerDataTable';
+// import { useServerDataTable } from '@/hooks/useServerDataTable';
 import { formatDate } from "@/utils/FormatDate";
 import { formatToRoundedIndianRupee } from "@/utils/FormatPrice";
 import { getTotalInflowAmount, getPOTotal, getSRTotal, getTotalAmountPaid } from "@/utils/getAmounts";
@@ -65,9 +75,11 @@ interface ProjectStatusCount {
 export const Projects: React.FC<ProjectsProps> = ({
   customersView = false,
   customerId,
-  urlContext = "main" // Default context for URL key
+//   urlContext = "main" // Default context for URL key
 }) => {
-  const urlSyncKey = useMemo(() => `projects_list_${urlContext}${customerId ? `_cust_${customerId}` : ''}`, [urlContext, customerId]);
+
+  //   it was tied to old Hook. state is managed locally now
+  //   const urlSyncKey = useMemo(() => `projects_list_${urlContext}${customerId ? `_cust_${customerId}` : ''}`, [urlContext, customerId]);
 
   const [statusCounts, setStatusCounts] = useState<ProjectStatusCount[]>([]);
 
@@ -287,22 +299,65 @@ export const Projects: React.FC<ProjectsProps> = ({
   // --- Static Filters for `useServerDataTable` ---
   const staticFilters = useMemo(() => getProjectStaticFilters(customerId), [customerId]);
 
-  // --- useServerDataTable Hook for the main Projects list ---
-  const {
-    table, data: projectsDataForTable, totalCount, isLoading: listIsLoading, error: listError,
-    searchTerm, setSearchTerm, selectedSearchField, setSelectedSearchField,
-    isRowSelectionActive, refetch,
-  } = useServerDataTable<ProjectsType>({ // Fetches ProjectsType
-    doctype: DOCTYPE,
-    columns: columns, // Columns defined below and passed to DataTable component
-    fetchFields: DEFAULT_PROJECT_FIELDS_TO_FETCH,
-    searchableFields: PROJECT_SEARCHABLE_FIELDS,
-    urlSyncKey: urlSyncKey,
-    defaultSort: 'creation desc',
-    enableRowSelection: false, // No selection needed for this overview table
-    additionalFilters: staticFilters,
-    shouldCache: true,
-  });
+// --- useServerDataTable Hook for the main Projects list ---
+//   const {
+//     table, data: projectsDataForTable, totalCount, isLoading: listIsLoading, error: listError,
+//     searchTerm, setSearchTerm, selectedSearchField, setSelectedSearchField,
+//     isRowSelectionActive, refetch,
+//   } = useServerDataTable<ProjectsType>({ // Fetches ProjectsType
+//     doctype: DOCTYPE,
+//     columns: columns, // Columns defined below and passed to DataTable component
+//     fetchFields: DEFAULT_PROJECT_FIELDS_TO_FETCH,
+//     searchableFields: PROJECT_SEARCHABLE_FIELDS,
+//     urlSyncKey: urlSyncKey,
+//     defaultSort: 'creation desc',
+//     enableRowSelection: false, // No selection needed for this overview table
+//     additionalFilters: staticFilters,
+//     shouldCache: true,
+//   });
+
+
+// ------ updated Logic according to useFrappeGetDocList to Fetch Parent Data ------ //
+const { data: projectsData, isLoading: listIsLoading, error: listError } = useFrappeGetDocList<ProjectsType>(
+    DOCTYPE,
+    {
+        fields: DEFAULT_PROJECT_FIELDS_TO_FETCH,
+        filters: staticFilters,
+        limit: 10000, // Fetch a large number of records for client-side handling
+        orderBy: { field: "creation", order: "desc" },
+    },
+    `projects_list_${customerId || 'all'}` // Add a cache key
+);
+
+const [sorting, setSorting] = useState<SortingState>([{ id: 'creation', desc: true }]);
+const [columnFilters, setColumnFilters] = useState<ColumnFiltersState>([]);
+const [globalFilter, setGlobalFilter] = useState('');
+
+// useFrappeDocTypeEventListener('Projects', (event) => {
+//     console.log(`[EVENT] DocType 'Projects' changed. Event details:`, event);
+//     console.log('[ACTION] Refetching the project list...');
+//     refetch();
+//     console.log('[ACTION] Refetching status counts...');
+//     fetchStatusCounts();
+// });
+
+
+const table = useReactTable({
+    data: projectsData || [],
+    columns,
+    getCoreRowModel: getCoreRowModel(),
+    getPaginationRowModel: getPaginationRowModel(),
+    getSortedRowModel: getSortedRowModel(),
+    getFilteredRowModel: getFilteredRowModel(),
+    onSortingChange: setSorting,
+    onColumnFiltersChange: setColumnFilters,
+    onGlobalFilterChange: setGlobalFilter,
+    state: {
+        sorting,
+        columnFilters,
+        globalFilter,
+    },
+});
 
   // // --- Transform fetched project data to include calculated financials and PR counts ---
   // const processedTableData = useMemo<ProcessedProjectForTable[]>(() => {
@@ -333,12 +388,17 @@ export const Projects: React.FC<ProjectsProps> = ({
 
   const combinedErrorOverall = poDataError || srDataError || projectInflowsError || projectPaymentsError || projectTypesError || listError;
 
-  if (combinedErrorOverall && !projectsDataForTable?.length) {
-    // Display prominent error from data fetching/processing
-    return (
-      <AlertDestructive error={combinedErrorOverall} />
-    );
-  }
+//   if (combinedErrorOverall && !projectsDataForTable?.length) {
+//     // Display prominent error from data fetching/processing
+//     return (
+//       <AlertDestructive error={combinedErrorOverall} />
+//     );
+//   }
+
+// Updated to this ->
+if (combinedErrorOverall && !projectsData?.length) {
+     return <AlertDestructive error={combinedErrorOverall} />;
+    }
 
   return (
     <div className="flex-1 space-y-4">
@@ -366,7 +426,7 @@ export const Projects: React.FC<ProjectsProps> = ({
               ) : (
                 all_projects_count
               )}
-            </div>
+            </div> 
             <div className="flex flex-col gap-1 text-xs font-semibold">
               {statusCounts.map((item, index) => (
                 <div key={`${item.value}_${index}`} className={`min-w-[100px] flex items-center justify-between px-2 py-0.5 ${getColor(item.value)} rounded-md`}>
@@ -378,20 +438,29 @@ export const Projects: React.FC<ProjectsProps> = ({
           </CardContent>
         </Card>
       )}
-      {isLoadingOverall && !projectsDataForTable?.length ? (
-        <TableSkeleton />
+      {/* {isLoadingOverall && !projectsDataForTable?.length ? (
+        <TableSkeleton /> */}
+       {/* ------ Updated to this ------  */}
+      {isLoadingOverall && !projectsData?.length ? (
+                <TableSkeleton />
       ) : (
         <DataTable<ProjectsType>
           table={table} // The table instance from useServerDataTable, now operating on clientData
           columns={columns} // Your defined display columns
           isLoading={listIsLoading} //isLoading for the table data itself
           error={listError}
-          totalCount={totalCount} // This will be total of processedProjects
+          //   totalCount={totalCount} // This will be total of processedProjects
+          totalCount={projectsData?.length ?? 0}
           searchFieldOptions={PROJECT_SEARCHABLE_FIELDS}
-          selectedSearchField={selectedSearchField}
-          onSelectedSearchFieldChange={setSelectedSearchField}
-          searchTerm={searchTerm}
-          onSearchTermChange={setSearchTerm}
+          // selectedSearchField={selectedSearchField}
+          // onSelectedSearchFieldChange={setSelectedSearchField}
+
+          //   searchTerm={searchTerm}
+          //   onSearchTermChange={setSearchTerm}
+
+          // Updated 
+          searchTerm={globalFilter}
+          onSearchTermChange={setGlobalFilter}
           facetFilterOptions={facetFilterOptions}
           dateFilterColumns={PROJECT_DATE_COLUMNS}
           showExportButton={true}
