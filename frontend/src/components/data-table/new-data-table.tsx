@@ -193,7 +193,7 @@ export function DataTable<T>({
          className="rounded-md border overflow-x-auto max-h-[70vh] overflow-y-auto relative">
       {/* Setting position relative for proper stacking context */}
       
-      <Table className="min-w-full table-fixed" data-cy="procurement-requests-data-table">
+      <Table className="min-w-full table-fixed" data-cy="data-table">
 
         {/* ---- colgroup guarantees identical widths ---- */}
         <colgroup>

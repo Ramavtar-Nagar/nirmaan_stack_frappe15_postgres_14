@@ -1,0 +1,5 @@
+{
+  "cancellationComment": "This PO is being cancelled as part of an automated end-to-end test flow.",
+  "noPoFoundMessage": "No approved POs were found to cancel. Skipping test.",
+  "noCancelOrDeleteButtonMessage": "The selected PO did not have a 'Cancel' or 'Delete' button."
+}

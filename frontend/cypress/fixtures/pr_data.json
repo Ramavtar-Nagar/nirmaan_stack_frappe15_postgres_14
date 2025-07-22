@@ -1,0 +1,47 @@
+{
+  "normalPR": {
+    "projectName": "Wakefit GT Road",
+    "workPackage": "Tool & Equipments",
+    "items": [
+      {
+        "itemName": "Sefty shoes 10 inches",
+        "make": "Test Make",
+        "quantity": 5,
+        "comment": "Check for Sizes properly."
+      },
+      {
+        "itemName": "Cotton gloves",
+        "make": "Test Make",
+        "quantity": 10,
+        "comment": "Ensure quality match existing one."
+      }
+    ]
+  },
+  "customPR": {
+    "projectName": "Wakefit GT Road",
+    "vendor": "J.D.",
+    "items": [
+      {
+        "procurementPackage": "Access Control System",
+        "category": "Controllers & Readers",
+        "description": "High-tensile strength TMT bars, 12mm diameter, 6m length",
+        "uom": "BOX",
+        "quantity": 2,
+        "tax": "18 %",
+        "quote": "55000",
+        "comment": "Requires batch test certificate upon delivery."
+      },
+      {
+        "procurementPackage": "Electrical Work",
+        "category": "DB & Switch Gear",
+        "description": "Custom 4-foot LED tube light with high CRI (>90)",
+        "uom": "NOS",
+        "quantity": 50,
+        "tax": "12 %",
+        "quote": "450",
+        "comment": "Verify color temperature is 4000K."
+      }
+    ],
+    "finalComment": "Submitting a custom PR for approval with two items."
+  }
+}

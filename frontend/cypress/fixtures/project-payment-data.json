@@ -1,0 +1,8 @@
+{
+  "rejectionComment": "Automated Test: Rejecting this payment for verification.",
+  "paymentDetails": {
+    "amount": "1000",
+    "utr": "CYPRESS_DYNAMIC_UTR_123",
+    "proofFile": "cypress-logo.png"
+  }
+}

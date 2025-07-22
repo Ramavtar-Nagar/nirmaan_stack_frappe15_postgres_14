@@ -52,7 +52,7 @@ const login_pr_end_email = Cypress.env('login_Email');
 const login_pr_end_password = Cypress.env('login_Password');
 const project_name = Cypress.env('project_Name') || "Wakefit GT Road";
 
-describe('Add a procurement request to approve it --- End-to-End test flow', () => {
+describe('Adding a procurement request to complete delivery of it --- End-to-End test flow.', () => {
 
     beforeEach(() => {
         // Using cy.session() to preserve login between different test blocks

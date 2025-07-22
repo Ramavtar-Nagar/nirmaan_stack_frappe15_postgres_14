@@ -37,6 +37,9 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
 
     it('Navigates to Procurement requests page and Creates a new and normal PR', () => {
 
+        cy.log(`Navigating to Procurement requests page and Creates a new PR`);
+        cy.pause();
+
         // Setting Up Intercept Use to Fetch PR-Number
         cy.intercept(
             'POST', 
@@ -195,7 +198,7 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
                 if (interception.response?.body && interception.response.body.data && interception.response.body.data.name) {
                     const fullPrName = interception.response.body.data.name;
                     cy.log(`Full PR Name from API response: ${fullPrName}`);
-                    // cy.pause();
+                    cy.pause();
 
                     // 2. Split the name string by hyphens
                     const parts = fullPrName.split('-');
@@ -208,7 +211,7 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
                         extractedPrNumber = parseInt(suffixWithZeros, 10).toString();
                         
                         cy.log(`Extracted PR Number : ---> ${extractedPrNumber}`);
-                        // cy.pause();
+                        cy.pause();
 
                         // Storing in Cypress.env for other tests
                         Cypress.env('prNumber', extractedPrNumber);
@@ -227,18 +230,23 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
         cy.then(() => {
             const prNumber = Cypress.env('prNumber');
             if (prNumber) {
-                cy.log(`Using extracted PR Suffix for further actions: ${prNumber}`);
+                cy.log(`Using extracted PR Suffix for further actions like approving, filling vendor quotes etc. : ${prNumber}`);
                 // cy.pause();
             } else {
                 cy.log('Cannot proceed as PR Suffix was not extracted.');
             }
         });
 
+        cy.log(`Created a New Pr Successfully`);
+        cy.pause();
+
     });
 
 
     it('Navigates to Procurement requests page And check for Newly Created PR and Approve IT', () => {
 
+        cy.log('Navigating to Procurement requests page And checking for Newly Created PR and Approving IT');
+        cy.pause();
         // Navigating to Procurement Requests Page and Validates using Search-bar and Data-Table ------>
         cy.get('[data-cy="procurement-requests-button"]').should('be.visible').click();
         cy.get('[data-cy="procurement-requests-search-bar"]').should('be.visible');
@@ -255,8 +263,8 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
 
         // PR Number
         const prNumber = Cypress.env('prNumber');
-        cy.log(`PR Number for the Processing PR : ---> ${prNumber}`);
-        // cy.pause();
+        cy.log(`PR Number from the environment for the Processing PR : ---> ${prNumber}`);
+        cy.pause();
 
         // Ensuring the table is visible before proceeding
         cy.get('[data-cy="procurement-requests-data-table"]').should('exist');
@@ -404,6 +412,7 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
                 // .should('exist')
                 .and('be.visible');
             cy.log('Misssing Item Added Successfully......');
+            // cy.pause();
                 
             cy.wait(1000); 
            
@@ -513,10 +522,14 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
 
             // Logging in the PR Number which is Approved
             cy.log(`Successfully Approved the PR with PR Number as: ${prNumber}`);
+            cy.pause();
     });
 
 
     it('Navigates to Procurement Requests Page, Navigates to New PR Request tab and add Vendor Quotes', () => {
+
+        cy.log('Navigating to Procurement Requests Page, Navigating to New PR Request tab and filling Vendor Quotes');
+        cy.pause();
 
         // Navigating to Procurement Requests Page
         cy.get('[data-cy="procurement-requests-button"]')
@@ -823,12 +836,15 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
 
         // Logging in the PR Number for which is Vendor Quotations are Added
         cy.log(`Successfully Added Vendor Quotations for the PR with PR Number as: ${prNumber}`);
+        cy.pause();
 
     });
 
 
-    it('Navigates to Purchase Orders and Approves the Procurement Request for which Vendor Quotations are added', () => {
+    it('Navigates to Purchase Orders and Approves the Purchase Order for which Vendor Quotations are Filled', () => {
 
+        cy.log('Navigating to Purchase Orders and Approving the Purchase Order for which Vendor Quotations are filled.');
+        cy.pause();
 
         // Step 1: Validate the Purchase Orders button exists and is visible
         cy.get('[data-cy="purchase-orders-button"]')
@@ -1018,11 +1034,17 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
                     cy.log('Cannot proceed as PO Number was not extracted.');
                 }
             });
+
+        cy.log('Purchase Order is Successflly Approved.');
+        cy.pause();   
    
     });
 
 
     it('Navigates to Approved PO tab and check for the approved PR', () => {
+
+        cy.log('Checking for the Approved Purchase Order in the purchase orders list');
+        cy.pause();
 
         const poNumber = Cypress.env('latestGeneratedPoNumber');
         cy.log(`PO Number to find in the Table : -> ${poNumber}`);
@@ -1075,6 +1097,7 @@ describe('Add a procurement request to approve it --- End-to-End test flow', () 
             });
         
         cy.log(`PO "${poNumber}" successfully found in the Approved POs table.`);
+        cy.pause();
 
         
     });

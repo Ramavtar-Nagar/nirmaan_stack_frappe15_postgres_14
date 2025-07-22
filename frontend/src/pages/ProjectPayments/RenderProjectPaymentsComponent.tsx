@@ -123,6 +123,7 @@ export const RenderProjectPaymentsComponent: React.FC = () => {
                 </div>
             ),
             value: "Payments Done",
+            
         },
         {
             label: (
@@ -157,6 +158,7 @@ export const RenderProjectPaymentsComponent: React.FC = () => {
                         buttonStyle="solid"
                         value={tab}
                         onChange={(e) => handleTabClick(e.target.value)}
+                        data-cy="new-payments"
                     />
                 )}
                 <Radio.Group
@@ -165,6 +167,7 @@ export const RenderProjectPaymentsComponent: React.FC = () => {
                     buttonStyle="solid"
                     value={tab}
                     onChange={(e) => handleTabClick(e.target.value)}
+                    dta-cy="unknown-button"
                 />
 
                 {paymentTypeBasedTabs && (

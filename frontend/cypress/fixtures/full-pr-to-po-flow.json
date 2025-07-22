@@ -1,0 +1,26 @@
+{
+  "project": "Wakefit GT Road",
+  "workPackage": "Tool & Equipments",
+  "items": [
+    {
+      "name": "Sefty shoes 10 inches",
+      "make": "Local Make",
+      "quantity": 35,
+      "comment": "Fixture: Please double-check the sizing."
+    },
+    {
+      "name": "Cotton gloves",
+      "make": "Test Make",
+      "quantity": 50,
+      "comment": "Fixture: Ensure quality matches existing stock."
+    }
+  ],
+  "missingProduct": {
+    "name": "Blue safety helmets",
+    "make": "Test Make",
+    "quantity": 10
+  },
+  "vendors": ["J.D.", "Reliable Local Supplier"],
+  "quoteRate": 1500,
+  "finalApprovalComment": "This PO is approved via an automated test flow."
+}

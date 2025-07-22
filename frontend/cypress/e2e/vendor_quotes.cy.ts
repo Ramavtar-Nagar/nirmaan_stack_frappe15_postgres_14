@@ -320,6 +320,7 @@ describe('Adding Vendor Quotes for New PR Request', () => {
 
         // Validationg Continue Button
         cy.get('[data-cy="vendor-selection-continue-button"]')
+          .scrollIntoView()
           .should('exist')
           .and('be.visible')
           .should('not.be.disabled')
