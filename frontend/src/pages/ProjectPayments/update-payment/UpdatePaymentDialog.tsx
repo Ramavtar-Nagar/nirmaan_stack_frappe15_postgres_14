@@ -149,7 +149,7 @@ export default function UpdatePaymentRequestDialog({
             <Separator className="my-3" />
 
             {/* UTR */}
-            <div className="grid grid-cols-5 items-center gap-4">
+            <div data-cy="utr-input-box" className="grid grid-cols-5 items-center gap-4">
               <Label htmlFor="utr" className="col-span-2 text-right">
                 UTR <sup className="text-red-500">*</sup>
               </Label>
@@ -158,7 +158,7 @@ export default function UpdatePaymentRequestDialog({
             </div>
 
             {/* TDS */}
-            <div className="grid grid-cols-5 items-center gap-4">
+            <div data-cy="tds-input-box" className="grid grid-cols-5 items-center gap-4">
               <Label htmlFor="tds" className="col-span-2 text-right">TDS</Label>
               <div className="col-span-3">
                 <Input id="tds" type="number" className="h-8"
@@ -171,7 +171,7 @@ export default function UpdatePaymentRequestDialog({
             </div>
 
             {/* Date */}
-            <div className="grid grid-cols-5 items-center gap-4">
+            <div data-cy="payment-date-input" className="grid grid-cols-5 items-center gap-4">
               <Label htmlFor="payDate" className="col-span-2 text-right">
                 Payment Date <sup className="text-red-500">*</sup>
               </Label>
@@ -200,12 +200,12 @@ export default function UpdatePaymentRequestDialog({
             ? <TailSpin height={24} width={24} color="red" />
             : <>
                 <AlertDialogCancel asChild>
-                  <Button variant="outline">Cancel</Button>
+                  <Button data-cy="fulfill-payment-cancel-button" variant="outline">Cancel</Button>
                 </AlertDialogCancel>
                 {mode === "fulfil"
-                  ? <Button onClick={doFulfil}
+                  ? <Button data-cy="fulfill-payment-confirm-button"  onClick={doFulfil}
                       disabled={!utr || !payDate}>Confirm Payment</Button>
-                  : <Button variant="destructive" onClick={doDelete}>
+                  : <Button data-cy="fulfill-payment-delete-button" variant="destructive" onClick={doDelete}>
                       Confirm Delete
                     </Button>}
               </>}

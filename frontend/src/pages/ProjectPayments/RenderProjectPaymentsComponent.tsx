@@ -115,7 +115,7 @@ export const RenderProjectPaymentsComponent: React.FC = () => {
     const paymentTypeBasedTabs = useMemo(() => [
         {
             label: (
-                <div className="flex items-center">
+                <div data-cy="payments-done-button" className="flex items-center">
                     <span>Payments Done</span>
                     <span className="ml-2 rounded text-xs font-bold">
                         {counts.pay.paid}
