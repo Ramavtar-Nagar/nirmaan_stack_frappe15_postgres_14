@@ -1459,7 +1459,7 @@ export const PurchaseOrder = ({
           <AccordionItem key="transac&payments" value="transac&payments">
             {/* {tab === "Delivered PO" && ( */}
             <AccordionTrigger>
-              <p className="font-semibold text-lg text-red-600 pl-6">
+              <p data-cy="payment-details-button" className="font-semibold text-lg text-red-600 pl-6">
                 Payment Details
               </p>
             </AccordionTrigger>

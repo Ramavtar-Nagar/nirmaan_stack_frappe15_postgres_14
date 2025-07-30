@@ -250,7 +250,7 @@ export function SelectVendorQuotesTable({
                                                                                 <p className={`text-xs font-medium truncate ${targetRateValue !== -1 && parseNumber(String(currentQuote)) < targetRateValue ? "text-green-600" : ""}`}>{currentMake || "-"}</p>
                                                                             )}
                                                              </div>
-                                                             <div className="space-y-0.5">
+                                                             <div data-cy="vendor-quote-rate" className="space-y-0.5">
                                                                 <Label className="text-xs font-medium text-muted-foreground">Rate</Label>
                                                                 {mode === "edit" && !isReadOnly ? (
                                                                                 <QuantityQuoteInput

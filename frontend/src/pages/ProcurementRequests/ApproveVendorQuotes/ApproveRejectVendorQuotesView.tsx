@@ -150,6 +150,7 @@ export const ApproveRejectVendorQuotesView: React.FC<
         {isPrEditable && canPerformActions && (
           <div className="flex justify-end gap-2">
             <Button
+              data-cy="reject-button"
               onClick={toggleSendBackDialog}
               variant="outline"
               size="sm"

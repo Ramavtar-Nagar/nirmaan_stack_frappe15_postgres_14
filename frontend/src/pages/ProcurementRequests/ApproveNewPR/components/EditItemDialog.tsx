@@ -317,7 +317,7 @@ export const EditItemDialog: React.FC<EditItemDialogProps> = ({
                                 </AlertDialogHeader>
                                 <AlertDialogFooter>
                                     <AlertDialogCancel>Cancel</AlertDialogCancel>
-                                    <AlertDialogAction onClick={() => onDelete(editItem)} className='bg-destructive hover:bg-destructive/90'>Confirm Delete</AlertDialogAction>
+                                    <AlertDialogAction data-cy="confirm-delete-button" onClick={() => onDelete(editItem)} className='bg-destructive hover:bg-destructive/90'>Confirm Delete</AlertDialogAction>
                                 </AlertDialogFooter>
                             </AlertDialogContent>
                         </AlertDialog>

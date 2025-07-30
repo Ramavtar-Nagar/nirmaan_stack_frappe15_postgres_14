@@ -253,8 +253,8 @@ export const AccountantTabs: React.FC<AccountantTabsProps> = ({ tab = "New Payme
             id: "actions", header: "Actions",
             cell: ({ row }) => (
                 <div className="flex items-center gap-2">
-                    <Button size="sm" className="h-7 bg-green-600 hover:bg-green-700" onClick={() => openDialog(row.original, "fulfil")}>Pay</Button>
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive/80" onClick={() => openDialog(row.original, "delete")}><Trash2 className="h-4 w-4" /></Button>
+                    <Button data-cy="payments-pay-button"  size="sm" className="h-7 bg-green-600 hover:bg-green-700" onClick={() => openDialog(row.original, "fulfil")}>Pay</Button>
+                    <Button data-cy="payments-delete-button" variant="ghost" size="icon" className="h-7 w-7 text-destructive hover:text-destructive/80" onClick={() => openDialog(row.original, "delete")}><Trash2 className="h-4 w-4" /></Button>
                 </div>
             ), size: 120,
         } as ColumnDef<ProjectPayments>] : []),
